@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: demo-app
+  template:
+    metadata:
+      labels:
+        app: demo-app
+    spec:
+      #affinity:
+       # podAntiAffinity:
+        #  preferredDuringSchedulingIgnoredDuringExecution:
+         # - weight: 100
+          #  podAffinityTerm:
+           #   labelSelector:
+            #    matchExpressions:
+             #     - key: app
+              #      operator: In
+               #     values:
+                #      - demo-app
+              #topologyKey: "kubernetes.io/hostname"
+      containers:
+      - name: demo-app
+        image: ysufemrlty/demo-app:latest
+        ports:
+          - containerPort: 5000
+            name: http-web
+        volumeMounts:
+        - mountPath: /data
+          name: data-volume
+      volumes:
+      - name: data-volume
+        persistentVolumeClaim:
+          claimName: demo-app-pvc
+

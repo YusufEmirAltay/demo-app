@@ -1,0 +1,7 @@
+apiVersion: demo.io/v1
+kind: MyAppConfig
+metadata:
+  name: example-config
+  namespace: default
+spec:
+  greetingMessage: "Merhaba, Kubernetes CRD'den selamlar!"
