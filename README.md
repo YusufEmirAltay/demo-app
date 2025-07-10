@@ -1,53 +1,64 @@
-1. Proje ve Uygulama Hazırlığı
-	1.	Yeni bir repo / klasör aç, içine:
-	•	app.js (Node) veya app.py (Flask).
-	•	/metrics endpoint'i; rastgele veya sayaç artan bir sayı döndürsün.
-	•	/ endpoint'i: "Hello from Demo-App!" ve DB'den son kaydı göstersin.
-	2.	requirements.txt veya package.json oluştur.
+# Demo-App Kubernetes Deployment ve CI/CD Rehberi
 
-2. Dockerizasyon
-	1.	Dockerfile yaz (uygulamayı, SQLite dosyasını /data klasörüne koyacak).
-	2.	Local registry'ye (ya da Docker Hub'a) image'ı tag'leyip push et.
+---
 
-3. İlk Kubernetes Deploy
-	1.	deployment.yaml & service.yaml oluştur, app'i Minikube'a deploy et.
-	2.	kubectl get pods,svc ile çalıştığını doğrula.
+## 1. Proje ve Uygulama Hazırlığı
+- Yeni bir repo/klasör oluştur.
+- İçine aşağıdakileri ekle:
+  - `app.js` (Node.js) veya `app.py` (Flask)
+  - `/metrics` endpoint: rastgele veya artan sayaç döndürsün.
+  - `/` endpoint: "Hello from Demo-App!" mesajı ve DB’den son kayıt gösterilsin.
+- `requirements.txt` veya `package.json` oluştur.
 
-4. Pod Affinity / Anti-Affinity
-	1.	Minikube'u 2 node'lu başlat.
-	2.	deployment.yaml içine affinity ve antiAffinity bölümlerini ekle:
-	•	Aynı label'lı pod'lar farklı node'lara gitsin.
-	3.	kubectl get pods -o wide ile dağılımı kontrol et.
+## 2. Dockerizasyon
+- Uygulamayı ve SQLite dosyasını `/data` klasörüne koyacak şekilde `Dockerfile` yaz.
+- Image’ı local registry’ye veya Docker Hub’a tag’leyip push et.
 
-5. Custom Metrics + Autoscaling
-	1.	Uygulamanın /metrics endpoint'ini Prometheus'un scrape edebileceği formatta bırak.
-	2.	Helm ile Prometheus + Prometheus Adapter kur.
-	3.	HPA manifest'i yaz: custom metric'e göre (örn. /metrics sayısına göre) scale yapılsın (min 1, max 5).
-	4.	Yük testi (curl loop) ile pod artışını gözle.
+## 3. İlk Kubernetes Deploy
+- `deployment.yaml` ve `service.yaml` dosyalarını oluştur.
+- Uygulamayı Minikube’a deploy et.
+- `kubectl get pods,svc` komutlarıyla çalıştığını doğrula.
 
-6. Custom Resource Definition (CRD)
-	1.	Basit bir CRD tanımla (MyAppConfig): içinde greetingMessage alanı bulunsun.
-	2.	crd.yaml ve örnek myappconfig.yaml oluşturup apply et.
-	3.	Uygulamanın config'ini bu CRD'den çekmesi için (örneğin env vars) küçük bir kod parçası ekle.
-	4.	kubectl get myappconfigs ile çalıştığını kontrol et.
+## 4. Pod Affinity / Anti-Affinity
+- Minikube’u 2 node’lu başlat.
+- `deployment.yaml` içine affinity ve antiAffinity bölümlerini ekle:
+  - Aynı label’a sahip pod’lar farklı node’lara gitsin.
+- `kubectl get pods -o wide` ile dağılımı kontrol et.
 
-7. Pod Disruption Budget + Chaos
-	1.	Deployment'ı 3 replika yap.
-	2.	pdb.yaml ile minAvailable: 2 tanımla.
-	3.	Basit bir bash script veya cronjob ile rastgele kubectl delete pod komutları at.
-	4.	Uygulamanın ayakta kaldığını doğrula.
+## 5. Custom Metrics + Autoscaling
+- `/metrics` endpoint’ini Prometheus’un scrape edebileceği formatta bırak.
+- Helm ile Prometheus ve Prometheus Adapter kurulumu yap.
+- HPA manifest’i oluştur: custom metric’e göre scale (min 1, max 5).
+- Yük testi (örn. `curl` loop) ile pod artışını gözlemle.
 
-8. Network Policy Güvenliği
-	1.	Aynı namespace'de iki farklı label'lı pod (örn. frontend, backend) çalıştır.
-	2.	networkpolicy.yaml ile sadece frontend → backend trafiğine izin ver; diğer tüm trafiği engelle.
-	3.	Busybox test pod'ları ile hem izinli hem engelli istekleri göster.
+## 6. Custom Resource Definition (CRD)
+- Basit bir CRD tanımla (`MyAppConfig`) içinde `greetingMessage` alanı olsun.
+- `crd.yaml` ve örnek `myappconfig.yaml` dosyalarını oluşturup `kubectl apply` et.
+- Uygulamanın config’ini bu CRD’den çekmesi için env var ya da küçük kod ekle.
+- `kubectl get myappconfigs` ile çalıştığını kontrol et.
 
-9. Persistent Volume Kullanımı
-	1.	Deployment'da SQLite veritabanını /data yoluna yazdır.
-	2.	PVC ve (Minikube'un default) StorageClass kullanarak pvc.yaml oluştur.
-	3.	Pod'u silip yeniden yarat: verinin kalıcılığını kubectl exec + cat /data/db.sqlite ile kontrol et.
+## 7. Pod Disruption Budget + Chaos
+- Deployment’ı 3 replika yap.
+- `pdb.yaml` ile `minAvailable: 2` tanımla.
+- Basit bash script veya cronjob ile rastgele `kubectl delete pod` çalıştır.
+- Uygulamanın kesintisiz ayakta kaldığını doğrula.
 
-10. CI/CD Pipeline (Bonus)
-	1.	.github/workflows/deploy.yml ya da Jenkinsfile ekle.
-	2.	Adımlar: push → Docker build → image push → kubectl apply → kubectl rollout status.
-	3.	Gerekirse helm upgrade --install veya kubectl kustomize kullan.
+## 8. Network Policy Güvenliği
+- Aynı namespace içinde farklı label’lı pod’lar çalıştır (ör. frontend, backend).
+- `networkpolicy.yaml` ile sadece frontend → backend trafiğine izin ver, diğer tüm trafiği engelle.
+- Busybox test pod’ları ile izinli ve engelli istekleri test et.
+
+## 9. Persistent Volume Kullanımı
+- Deployment’da SQLite veritabanını `/data` yoluna yazdır.
+- PVC ve Minikube’un default StorageClass ile `pvc.yaml` oluştur.
+- Pod’u silip yeniden yarat, verinin kalıcılığını `kubectl exec` + `cat /data/db.sqlite` ile kontrol et.
+
+## 10. CI/CD Pipeline (Bonus)
+- `.github/workflows/deploy.yml` veya `Jenkinsfile` ekle.
+- Adımlar:
+  - Push → Docker build → Image push → `kubectl apply` → `kubectl rollout status`.
+- Gerekirse `helm upgrade --install` veya `kubectl kustomize` kullan.
+
+---
+
+**Not:** Her adımda `kubectl logs` ve `kubectl describe` ile pod durumlarını ve hataları kontrol etmeyi unutma.
