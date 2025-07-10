@@ -60,5 +60,3 @@
 - Gerekirse `helm upgrade --install` veya `kubectl kustomize` kullan.
 
 ---
-
-**Not:** Her adımda `kubectl logs` ve `kubectl describe` ile pod durumlarını ve hataları kontrol etmeyi unutma.
