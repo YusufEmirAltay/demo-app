@@ -1,4 +1,4 @@
-# Demo-App Kubernetes Deployment ve CI/CD Rehberi
+# Demo-App Kubernetes Deployment ve CI/CD Task'ı
 
 ---
 
